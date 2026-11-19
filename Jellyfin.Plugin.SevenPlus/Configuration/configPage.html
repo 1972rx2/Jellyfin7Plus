@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>7plus</title></head>
+<body>
+  <div id="SevenPlusConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-button,emby-input">
+    <div data-role="content"><div class="content-primary">
+      <img id="sevenPlusLogo" alt="7plus" style="display:block;width:100%;max-width:280px;height:auto;margin:0 auto 20px;" />
+      <h1>7plus</h1>
+      <p>Pair your 7plus account using the official device connection page. Your password is entered only on 7plus.</p>
+      <p>Episodes protected by DRM are labelled and cannot be played here. This plugin only passes clear HLS streams to Jellyfin.</p>
+
+      <div class="inputContainer">
+        <button is="emby-button" type="button" class="raised button-submit block emby-button" id="signInButton"><span>Sign in to 7plus</span></button>
+        <button is="emby-button" type="button" class="raised block emby-button" id="checkStatusButton"><span>Check sign-in status</span></button>
+        <button is="emby-button" type="button" class="raised block emby-button" id="signOutButton"><span>Sign out</span></button>
+        <div id="loginInstructions" class="fieldDescription" style="display:none"></div>
+        <div id="loginStatus" class="fieldDescription" style="display:none"></div>
+      </div>
+
+      <div class="inputContainer">
+        <label class="inputLabel inputLabelUnfocused" for="SearchTerm">Show search term</label>
+        <input is="emby-input" id="SearchTerm" type="text" autocomplete="off" />
+        <div class="fieldDescription">The channel's Search Results folder uses this term. Browse by topic for broad catalogue searches.</div>
+      </div>
+      <button is="emby-button" type="button" class="raised button-submit block emby-button" id="saveButton"><span>Save</span></button>
+    </div></div>
+    <script>
+    (() => {
+      const page = document.querySelector('#SevenPlusConfigPage');
+      const pluginId = '4a5998a0-18da-4553-95a0-9e95540250b3';
+      const logo = document.querySelector('#sevenPlusLogo');
+      logo.src = ApiClient.getUrl(`Plugins/${pluginId}/Image`);
+      logo.addEventListener('error', () => logo.remove());
+      let loginTimer;
+      let pollInFlight = false;
+      page.addEventListener('pagehide', () => clearInterval(loginTimer));
+      page.addEventListener('pageshow', () => ApiClient.getPluginConfiguration(pluginId).then(config => {
+        document.querySelector('#SearchTerm').value = config.SearchTerm || '';
+      }).then(() => checkLoginStatus()));
+
+      document.querySelector('#saveButton').addEventListener('click', () => ApiClient.getPluginConfiguration(pluginId).then(config => {
+        config.SearchTerm = document.querySelector('#SearchTerm').value.trim();
+        return ApiClient.updatePluginConfiguration(pluginId, config);
+      }).then(Dashboard.processPluginConfigurationUpdateResult));
+
+      document.querySelector('#signInButton').addEventListener('click', async () => {
+        const instructions = document.querySelector('#loginInstructions');
+        const statusMessage = document.querySelector('#loginStatus');
+        clearInterval(loginTimer);
+        Dashboard.showLoadingMsg();
+        try {
+          const response = await ApiClient.fetch({ type: 'POST', url: ApiClient.getUrl('SevenPlus/Auth/start') });
+          if (typeof response.ok === 'boolean' && !response.ok) throw new Error('Could not create a pairing code.');
+          const start = typeof response.json === 'function' ? await response.json() : response;
+          const userCode = start.userCode || start.UserCode;
+          const expiry = start.expiresAtUnixSeconds || start.ExpiresAtUnixSeconds;
+          const pollInterval = (start.pollIntervalSeconds || start.PollIntervalSeconds || 5) * 1000;
+          const activation = start.activationUrl || start.ActivationUrl || 'https://7plus.com.au/connect';
+          const link = document.createElement('a');
+          link.href = activation;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = activation;
+          instructions.replaceChildren('Open ', link, ' and enter code ', userCode, '. Waiting for approval…');
+          instructions.style.display = 'block';
+          statusMessage.textContent = '';
+          statusMessage.style.display = 'none';
+          const timer = loginTimer = setInterval(async () => {
+            if (pollInFlight) return;
+            if (Math.floor(Date.now() / 1000) >= expiry) {
+              clearInterval(timer);
+              statusMessage.textContent = 'The code expired. Select Sign in to create a new one.';
+              statusMessage.style.display = 'block';
+              return;
+            }
+            try {
+              pollInFlight = true;
+              const resultResponse = await ApiClient.fetch({ type: 'POST', url: ApiClient.getUrl('SevenPlus/Auth/complete') });
+              if (typeof resultResponse.ok === 'boolean' && !resultResponse.ok) throw new Error('Could not check sign-in.');
+              const result = typeof resultResponse.json === 'function' ? await resultResponse.json() : resultResponse;
+              if (result.complete || result.Complete) {
+                clearInterval(timer);
+                statusMessage.textContent = '7plus sign-in complete.';
+                statusMessage.style.display = 'block';
+                return;
+              }
+              const detail = result.detail || result.Detail;
+              if (detail) { statusMessage.textContent = detail; statusMessage.style.display = 'block'; }
+            } catch (error) {
+              statusMessage.textContent = 'Could not check sign-in. Approval has not been confirmed. Retrying…';
+              statusMessage.style.display = 'block';
+              console.error('7plus device pairing poll failed', error);
+            } finally {
+              pollInFlight = false;
+            }
+          }, pollInterval);
+        } catch (error) {
+          statusMessage.textContent = 'Could not create a 7plus pairing code. Check the Jellyfin server log and try again.';
+          statusMessage.style.display = 'block';
+          console.error('7plus device pairing start failed', error);
+        } finally {
+          Dashboard.hideLoadingMsg();
+        }
+      });
+
+      document.querySelector('#checkStatusButton').addEventListener('click', () => checkLoginStatus(true));
+      document.querySelector('#signOutButton').addEventListener('click', async () => {
+        const statusMessage = document.querySelector('#loginStatus');
+        try {
+          const response = await ApiClient.fetch({ type: 'POST', url: ApiClient.getUrl('SevenPlus/Auth/logout') });
+          if (typeof response.ok === 'boolean' && !response.ok) throw new Error('Sign out failed.');
+          statusMessage.textContent = '7plus signed out.';
+          statusMessage.style.display = 'block';
+        } catch (error) {
+          statusMessage.textContent = 'Could not sign out of 7plus.';
+          statusMessage.style.display = 'block';
+          console.error('7plus sign out failed', error);
+        }
+      });
+
+      async function checkLoginStatus(showPending) {
+        const statusMessage = document.querySelector('#loginStatus');
+        try {
+          const response = await ApiClient.fetch({ url: ApiClient.getUrl('SevenPlus/Auth/status') });
+          if (typeof response.ok === 'boolean' && !response.ok) throw new Error('Status request failed.');
+          const status = typeof response.json === 'function' ? await response.json() : response;
+          statusMessage.textContent = status.complete || status.Complete ? '7plus sign-in complete.' : '7plus is not signed in.';
+          statusMessage.style.display = showPending || status.complete || status.Complete ? 'block' : 'none';
+        } catch (error) {
+          if (showPending) {
+            statusMessage.textContent = 'Jellyfin could not check the sign-in state. Restart Jellyfin after updating the plugin, then try again.';
+            statusMessage.style.display = 'block';
+          }
+          console.error('7plus sign-in status check failed', error);
+        }
+      }
+    })();
+    </script>
+  </div>
+</body>
+</html>
+

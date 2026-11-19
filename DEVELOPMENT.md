@@ -1,23 +1,22 @@
 # Jellyfin7Plus
 
-Experimental 7plus catch-up TV integration for Jellyfin.
+Experimental 7plus catch-up TV integration for Jellyfin. The implementation targets the Jellyfin 12.4 API and mirrors the plugin and channel structure used by Jellyfin9Now.
 
-> Development scaffold only. No working 7plus catalogue, authentication or playback integration has been implemented or verified yet.
+## Current status
 
-## Goals
-- Browse on-demand programmes, seasons and episodes within Jellyfin (not live TV).
-- Display 7plus branding in the Jellyfin plugin page and library/dashboard entry.
-- Display artwork, programme descriptions and episode metadata.
-- Identify DRM-protected streams and visibly label them `[DRM]` and/or with a thumbnail badge, following the approach used in [Jellyfin9Now](https://github.com/1972rx2/Jellyfin9Now).
-- Play only streams supported by Jellyfin without circumventing DRM.
+- Implemented catalogue search, topic navigation, show seasons, and episode items.
+- Implemented official 7plus device pairing without account-password handling.
+- Playback metadata rejects DRM-marked media and selects only clear HTTPS HLS sources.
+- The plugin builds with no warnings and its six local DRM/HLS safety smoke checks pass.
+- Live requests to 7plus could not be exercised in this sandbox. A Jellyfin server and an Australian 7plus account are still needed to verify pairing, catalogue response shapes, and clear-stream playback end to end.
 
-## Implementation plan
-1. Review the existing Jellyfin9Now plugin architecture, compatibility target and icon handling.
-2. Implement a minimal buildable Jellyfin plugin, with its own plugin identifier and branding.
-3. Research 7plus catalogue and authentication interfaces; use permitted endpoints and respect service terms.
-4. Add programme/season/episode browsing, metadata and images.
-5. Detect protected playback variants and mark them DRM; never expose them as ordinary playable media.
-6. Test supported clear streams on a Jellyfin installation, then package a release.
+## Remaining verification
 
-## Status
-Repository initialised. No installable release yet.
+1. Install the package on Jellyfin 12.4.
+2. Pair a 7plus account using the official `7plus.com.au/connect` flow.
+3. Confirm search and season/episode navigation against the current 7plus catalogue.
+4. Play a provider-reported clear HLS episode and check that a DRM-protected episode is visibly labelled and refused.
+5. Update this status after the server-side check.
+
+The plugin does not implement live TV or attempt DRM playback.
+
