@@ -22,6 +22,12 @@ In Jellyfin, open **Dashboard → Plugins → Repositories**, add a repository n
 
 Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build targets Jellyfin 12.4 (`targetAbi` `12.4.0.0`).
 
+## Manual install
+
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.0-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.0-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+2. Restart Jellyfin.
+3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
+
 ## Sign in
 
 1. In Jellyfin, open **Dashboard → Plugins → 7plus** and select **Sign in to 7plus**.
@@ -44,4 +50,8 @@ dotnet run --project tests/Jellyfin.Plugin.SevenPlus.SmokeTests/Jellyfin.Plugin.
 The target framework and package versions mirror the companion [Jellyfin9Now repository](https://github.com/1972rx2/Jellyfin9Now).
 
 See [API notes](docs/API-NOTES.md) for the app services used by the plugin and its playback limits.
+
+## Verification status
+
+Both Debug and Release builds pass with no warnings. Six local smoke checks cover DRM rejection, clear HLS selection, and unsupported media. The app sandbox has no network route to 7plus and no Jellyfin server, so device pairing, live catalogue responses, and end-to-end playback have not been verified against a running server.
 
