@@ -53,4 +53,4 @@ See [API notes](docs/API-NOTES.md) for the app services used by the plugin and i
 
 ## Verification status
 
-Both Debug and Release builds pass with no warnings. Ten local smoke checks cover direct genre navigation, current listing and episode response parsing, DRM rejection, clear HLS selection, and unsupported media. The public 7plus catalogue schema has been checked against live responses; account pairing and playback have not been exercised through a live Jellyfin session.
+Both Debug and Release builds pass with no warnings. Eleven local smoke checks cover direct genre navigation, current listing and episode response parsing, surfaced empty-shelf errors, DRM rejection, clear HLS selection, and unsupported media. The live 7plus “Aussie Drama” component returns 41 show cards. Account pairing and playback have not been exercised through a live Jellyfin session.
