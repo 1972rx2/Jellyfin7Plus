@@ -9,12 +9,12 @@
     "imageUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/assets/sevenplus-logo.png",
     "versions": [
       {
-        "version": "0.1.1.0",
-        "changelog": "Shows genre folders directly at the channel root and updates the 7plus logos in Jellyfin and the plugin dashboard.",
+        "version": "0.1.2.0",
+        "changelog": "Fixes empty genre and season folders against the current 7plus v2 component API, while retaining the updated 7+ artwork.",
         "targetAbi": "12.4.0.0",
-        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.1-jellyfin12.4-test.zip",
-        "checksum": "6416d3fb23fcbe21838944f1f11233c7",
-        "timestamp": "2026-11-20 11:07:17"
+        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.2-jellyfin12.4-test.zip",
+        "checksum": "bb0bcbd4da5edb614b2dbb7d3f4aefc5",
+        "timestamp": "2026-11-20 11:48:22"
       }
     ]
   }
