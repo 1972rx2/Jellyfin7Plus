@@ -105,8 +105,14 @@ public static class SevenPlusApiClient
 
         PluginConfiguration configuration = GetConfiguration();
         int marketId = await GetMarketIdAsync(configuration, cancellationToken).ConfigureAwait(false);
-        await EnsureFreshTokenAsync(configuration, cancellationToken).ConfigureAwait(false);
-        return await GetJsonAsync(uri.AbsoluteUri, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
+        // Catalogue components are public and the provider marks these URLs signedUp=False.
+        // Sending the playback account token here can cause account-specific shelf responses
+        // and is not needed to browse the catalogue.
+        return await GetJsonCoreAsync(
+            uri.AbsoluteUri,
+            includeAccountToken: false,
+            [("market-id", marketId.ToString(CultureInfo.InvariantCulture))],
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Requests playback metadata and returns only a clear HTTPS HLS source.</summary>
@@ -393,9 +399,18 @@ public static class SevenPlusApiClient
 
     private static async Task<JsonDocument> GetJsonAsync(string url, CancellationToken cancellationToken, params (string Name, string Value)[] extraHeaders)
     {
+        return await GetJsonCoreAsync(url, includeAccountToken: true, extraHeaders, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<JsonDocument> GetJsonCoreAsync(
+        string url,
+        bool includeAccountToken,
+        (string Name, string Value)[] extraHeaders,
+        CancellationToken cancellationToken)
+    {
         PluginConfiguration configuration = GetConfiguration();
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        AddProviderHeaders(request, configuration);
+        AddProviderHeaders(request, includeAccountToken ? configuration : null);
         foreach ((string name, string value) in extraHeaders)
         {
             request.Headers.TryAddWithoutValidation(name, value);

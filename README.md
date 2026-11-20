@@ -5,7 +5,7 @@ An early Jellyfin 12.4 channel plugin for browsing 7plus catch-up shows and play
 ## Included
 
 - 7plus branding on the channel and dashboard configuration page.
-- Open the channel to see genre folders immediately, then navigate shows, seasons, and episodes.
+- Open the channel to see genre folders immediately, then navigate shows, seasons, and episodes. Public catalogue requests do not require an account token; pairing is retained for playback requests.
 - Pair a 7plus account through the official `7plus.com.au/connect` device-code flow. The Jellyfin server never asks for or stores the account password.
 - DRM-protected episodes are labelled when the 7plus component or playback metadata reports protection. The plugin refuses those episodes and never requests a DRM licence or modifies DRM media.
 - Clear HTTPS HLS playback is returned to Jellyfin with the provider user agent.
@@ -24,7 +24,7 @@ Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build 
 
 ## Manual install
 
-1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.2-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.2-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.3-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.3-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
 2. Restart Jellyfin.
 3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
 

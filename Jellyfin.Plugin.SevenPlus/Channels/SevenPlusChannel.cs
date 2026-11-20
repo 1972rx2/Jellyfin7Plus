@@ -23,7 +23,7 @@ namespace Jellyfin.Plugin.SevenPlus.Channels;
 /// <summary>The browseable 7plus catch-up channel.</summary>
 public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 {
-    private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo.png";
+    private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo013.png";
     private static readonly (string Id, string Name, string Slug)[] BrowseTopics =
     [
         ("drama", "Drama", "drama"),
@@ -120,7 +120,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
             }
 
             using JsonDocument document = await SevenPlusApiClient.GetComponentAsync(sourceUri, cancellationToken).ConfigureAwait(false);
-            items = ParseShowCards(GetArray(document.RootElement, "mediaItems"));
+            items = ParseShelf(document.RootElement);
         }
         else if (folderId.StartsWith("show:", StringComparison.Ordinal))
         {
@@ -146,9 +146,13 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
             using JsonDocument document = await SevenPlusApiClient.GetSeasonAsync(showSlug, componentId, cancellationToken).ConfigureAwait(false);
             items = await ParseEpisodesAsync(document.RootElement, cancellationToken).ConfigureAwait(false);
         }
-        else
+        else if (folderId.StartsWith("video:", StringComparison.Ordinal))
         {
             items = [];
+        }
+        else
+        {
+            throw new InvalidOperationException($"Jellyfin requested an unknown 7plus folder identifier. Reopen the 7plus channel after updating the plugin.");
         }
 
         return new ChannelItemResult { Items = items, TotalRecordCount = items.Count };
@@ -322,6 +326,20 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         }
 
         return items.GroupBy(item => item.Id, StringComparer.Ordinal).Select(group => group.First()).ToList();
+    }
+
+    private static List<ChannelItemInfo> ParseShelf(JsonElement shelf)
+    {
+        JsonElement mediaItems = GetArray(shelf, "mediaItems");
+        List<ChannelItemInfo> items = ParseShowCards(mediaItems);
+        if (items.Count == 0)
+        {
+            string responseType = GetString(shelf, "type") ?? "unknown";
+            string shelfName = GetString(shelf, "title") ?? "unknown";
+            throw new InvalidOperationException($"7plus returned no supported shows for the '{shelfName}' shelf (response type: {responseType}, mediaItems: {GetArrayLengthSafe(mediaItems)}). Check the Jellyfin server log and update the plugin cache.");
+        }
+
+        return items;
     }
 
     private static void AddContentItem(List<ChannelItemInfo> items, string? link, string? title, string? overview, string? image)
@@ -598,6 +616,11 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
     private static JsonElement GetFirstElement(JsonElement array)
     {
         return array.ValueKind == JsonValueKind.Array && array.GetArrayLength() > 0 ? array[0] : default;
+    }
+
+    private static int GetArrayLengthSafe(JsonElement element)
+    {
+        return element.ValueKind == JsonValueKind.Array ? element.GetArrayLength() : 0;
     }
 
     private static JsonElement GetObject(JsonElement element, string property)

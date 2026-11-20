@@ -6,15 +6,15 @@
     "description": "Browse 7plus catch-up shows and play clear HLS episodes in Jellyfin.",
     "overview": "Australian catch-up TV from 7plus. DRM-protected episodes are labelled and cannot be played by this plugin.",
     "owner": "1972rx2",
-    "imageUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/assets/sevenplus-logo.png",
+    "imageUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/assets/sevenplus-logo-0.1.3.png",
     "versions": [
       {
-        "version": "0.1.2.0",
-        "changelog": "Fixes empty genre and season folders against the current 7plus v2 component API, while retaining the updated 7+ artwork.",
+        "version": "0.1.3.0",
+        "changelog": "Refreshes empty Jellyfin channel caches, loads public 7plus component shelves without account-token filtering, reports unexpected empty shelf responses, and cache-busts the updated 7+ logo.",
         "targetAbi": "12.4.0.0",
-        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.2-jellyfin12.4-test.zip",
-        "checksum": "bb0bcbd4da5edb614b2dbb7d3f4aefc5",
-        "timestamp": "2026-11-20 11:48:22"
+        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.3-jellyfin12.4-test.zip",
+        "checksum": "b3d7e87c9cad8082c347327a1d9d9c1a",
+        "timestamp": "2026-11-20 17:04:26"
       }
     ]
   }

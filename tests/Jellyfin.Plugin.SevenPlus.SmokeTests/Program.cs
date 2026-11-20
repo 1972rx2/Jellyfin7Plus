@@ -30,13 +30,32 @@ Run("7plus listing pages expose featured shows and shelf folders", () =>
     Assert(items.Any(item => item.Name == "The Reunion" && item.Id.StartsWith("show:", StringComparison.Ordinal)), "Expected the featured show card.");
 });
 
-Run("v2 media shelves expose show cards", () =>
+Run("live 7plus shelf response produces show items", () =>
 {
     using JsonDocument shelf = JsonDocument.Parse("""
-        {"type":"mediaShelf","mediaItems":[{"type":"SeriesCard","title":"Winter","description":"Mystery drama.","contentLink":{"url":"/winter"},"image":{"url":"https://images.example.test/winter.jpg"}}]}
+        {"title":"Aussie Drama","type":"mediaShelf","mediaItems":[{"type":"SeriesCard","title":"The Lighthorsemen","description":"A historical drama.","contentLink":{"url":"/the-lighthorsemen","type":"navigationItem"},"image":{"url":"https://images.example.test/lighthorsemen.jpg"},"metadata":{"show":{"genres":["Drama"]}}}]}
         """);
-    List<ChannelItemInfo> items = InvokeListParser("ParseShowCards", shelf.RootElement.GetProperty("mediaItems"));
-    Assert(items.Count == 1 && items[0].Name == "Winter" && items[0].Id.StartsWith("show:", StringComparison.Ordinal), "Expected one show folder from the v2 shelf.");
+    List<ChannelItemInfo> items = InvokeListParser("ParseShelf", shelf.RootElement);
+    Assert(items.Count == 1 && items[0].Name == "The Lighthorsemen" && items[0].Id.StartsWith("show:", StringComparison.Ordinal), "Expected the live 7plus shelf card to become a show folder.");
+});
+
+Run("unexpected empty shelves are reported", () =>
+{
+    using JsonDocument shelf = JsonDocument.Parse("""
+        {"title":"Aussie Drama","type":"mediaShelf","mediaItems":[]}
+        """);
+    bool reported = false;
+    try
+    {
+        _ = InvokeListParser("ParseShelf", shelf.RootElement);
+    }
+    catch (TargetInvocationException ex) when (ex.InnerException is InvalidOperationException message
+        && message.Message.Contains("Aussie Drama", StringComparison.Ordinal))
+    {
+        reported = true;
+    }
+
+    Assert(reported, "Expected an actionable error instead of a silently empty folder.");
 });
 
 Run("v2 episode cards use the episode title", () =>
