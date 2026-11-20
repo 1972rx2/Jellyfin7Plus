@@ -17,7 +17,7 @@ public static class SevenPlusApiClient
 {
     private const string SearchUrl = "https://searchapi.swm.digital/3.0/api/Search";
     private const string ContentUrl = "https://component-cdn.swm.digital/content";
-    private const string ComponentUrl = "https://component.swm.digital/component";
+    private const string ComponentUrl = "https://component.swm.digital/v2/component";
     private const string PlaybackUrl = "https://videoservice.swm.digital/playback";
     private const string MarketUrl = "https://market-cdn.swm.digital/v1/market/ip/";
     private const string AuthorizationUrl = "https://auth2.swm.digital/account/device/authorize";
@@ -27,6 +27,9 @@ public static class SevenPlusApiClient
     private const string PlatformId = "androidtv";
     private const string PlatformVersion = "8.0";
     private const string ApiVersion = "4.11";
+    private const string ComponentPlatformId = "AndroidTv";
+    private const string ComponentPlatformVersion = "8.0.0.0";
+    private const string ComponentApiVersion = "4.11.0.0";
     private const string AuthApiVersion = "1.1";
     private const string VodAccountId = "5303576322001";
     private const string VodOzid = "dc6095c7-e895-41d3-6609-79f673fc7f63";
@@ -79,12 +82,31 @@ public static class SevenPlusApiClient
         await EnsureFreshTokenAsync(configuration, cancellationToken).ConfigureAwait(false);
         string url = BuildUrl(ComponentUrl + "/" + Uri.EscapeDataString(showSlug),
             ("component-id", componentId),
-            ("platform-id", PlatformId),
+            ("platform-id", ComponentPlatformId),
             ("market-id", marketId.ToString(CultureInfo.InvariantCulture)),
-            ("platform-version", PlatformVersion),
-            ("api-version", ApiVersion),
+            ("platform-version", ComponentPlatformVersion),
+            ("api-version", ComponentApiVersion),
             ("signedUp", string.IsNullOrWhiteSpace(configuration.AccessToken) ? "False" : "True"));
         return await GetJsonAsync(url, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
+    }
+
+    /// <summary>Gets a 7plus media shelf using its provider-supplied component URL.</summary>
+    public static async Task<JsonDocument> GetComponentAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+        if (uri.Scheme != Uri.UriSchemeHttps
+            || !string.Equals(uri.Host, "component.swm.digital", StringComparison.OrdinalIgnoreCase)
+            || !uri.AbsolutePath.StartsWith("/v2/component/", StringComparison.Ordinal)
+            || !string.IsNullOrEmpty(uri.UserInfo)
+            || uri.Port != 443)
+        {
+            throw new InvalidOperationException("7plus returned an unsupported media shelf URL.");
+        }
+
+        PluginConfiguration configuration = GetConfiguration();
+        int marketId = await GetMarketIdAsync(configuration, cancellationToken).ConfigureAwait(false);
+        await EnsureFreshTokenAsync(configuration, cancellationToken).ConfigureAwait(false);
+        return await GetJsonAsync(uri.AbsoluteUri, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
     }
 
     /// <summary>Requests playback metadata and returns only a clear HTTPS HLS source.</summary>
@@ -551,4 +573,3 @@ public sealed record DeviceLoginStart(string UserCode, Uri ActivationUrl, long E
 
 /// <summary>The outcome of a device-code sign-in poll.</summary>
 public sealed record DeviceLoginCompletion(bool Complete, string? Detail);
-

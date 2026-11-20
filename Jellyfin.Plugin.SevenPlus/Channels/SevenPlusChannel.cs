@@ -24,16 +24,16 @@ namespace Jellyfin.Plugin.SevenPlus.Channels;
 public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 {
     private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo.png";
-    private static readonly (string Id, string Name, string Term)[] BrowseTopics =
+    private static readonly (string Id, string Name, string Slug)[] BrowseTopics =
     [
         ("drama", "Drama", "drama"),
         ("reality", "Reality", "reality"),
-        ("lifestyle", "Lifestyle", "lifestyle"),
+        ("lifestyle", "Lifestyle", "lifestyle-food-travel"),
         ("news", "News", "news"),
         ("sport", "Sport", "sport"),
-        ("movies", "Movies", "movie"),
-        ("crime", "Crime", "crime"),
-        ("kids", "Kids", "kids"),
+        ("movies", "Movies", "movies"),
+        ("crime", "Crime", "mystery-crime"),
+        ("kids", "Kids", "kids-family"),
     ];
 
     /// <inheritdoc />
@@ -93,10 +93,16 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         else if (folderId.StartsWith("topic:", StringComparison.Ordinal))
         {
             string topicId = DecodeId(folderId["topic:".Length..]);
-            (string Id, string Name, string Term) topic = BrowseTopics.FirstOrDefault(item => item.Id == topicId);
-            items = string.IsNullOrWhiteSpace(topic.Id)
-                ? []
-                : await GetSearchItemsAsync(topic.Term, cancellationToken).ConfigureAwait(false);
+            (string Id, string Name, string Slug) topic = BrowseTopics.FirstOrDefault(item => item.Id == topicId);
+            if (string.IsNullOrWhiteSpace(topic.Id))
+            {
+                items = [];
+            }
+            else
+            {
+                using JsonDocument document = await SevenPlusApiClient.GetShowAsync(topic.Slug, cancellationToken).ConfigureAwait(false);
+                items = ParseListingPage(document.RootElement);
+            }
         }
         else if (string.Equals(folderId, "search", StringComparison.Ordinal))
         {
@@ -105,11 +111,27 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
                 ? []
                 : await GetSearchItemsAsync(searchTerm, cancellationToken).ConfigureAwait(false);
         }
+        else if (folderId.StartsWith("shelf:", StringComparison.Ordinal))
+        {
+            string sourceUrl = DecodeId(folderId["shelf:".Length..]);
+            if (!Uri.TryCreate(sourceUrl, UriKind.Absolute, out Uri? sourceUri))
+            {
+                throw new InvalidOperationException("This 7plus media shelf link is invalid. Reopen the genre page to refresh it.");
+            }
+
+            using JsonDocument document = await SevenPlusApiClient.GetComponentAsync(sourceUri, cancellationToken).ConfigureAwait(false);
+            items = ParseShowCards(GetArray(document.RootElement, "mediaItems"));
+        }
         else if (folderId.StartsWith("show:", StringComparison.Ordinal))
         {
             string showSlug = DecodeId(folderId["show:".Length..]);
             using JsonDocument document = await SevenPlusApiClient.GetShowAsync(showSlug, cancellationToken).ConfigureAwait(false);
-            items = ParseSeasons(showSlug, document.RootElement);
+            JsonElement pageItems = GetArray(document.RootElement, "items");
+            bool hasSeasonShelf = pageItems.ValueKind == JsonValueKind.Array
+                && pageItems.EnumerateArray().Any(item => GetString(item, "type") == "shelfContainer");
+            items = hasSeasonShelf
+                ? ParseSeasons(showSlug, document.RootElement)
+                : ParseListingPage(document.RootElement);
         }
         else if (folderId.StartsWith("season:", StringComparison.Ordinal))
         {
@@ -227,6 +249,126 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         return items.GroupBy(item => item.Id, StringComparer.Ordinal).Select(group => group.First()).ToList();
     }
 
+    private static List<ChannelItemInfo> ParseListingPage(JsonElement page)
+    {
+        JsonElement rows = GetArray(page, "items");
+        if (rows.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var items = new List<ChannelItemInfo>();
+        foreach (JsonElement row in rows.EnumerateArray())
+        {
+            string? type = GetString(row, "type");
+            if (string.Equals(type, "ctaTop", StringComparison.Ordinal))
+            {
+                AddContentItem(
+                    items,
+                    GetString(row, "contentLink"),
+                    GetString(row, "title"),
+                    GetString(row, "description"),
+                    GetImage(GetObject(row, "images"), "primaryImage"));
+            }
+            else if (string.Equals(type, "mediaShelf", StringComparison.Ordinal))
+            {
+                string? sourceUrl = GetString(GetObject(row, "source"), "url");
+                if (IsSupportedComponentUrl(sourceUrl))
+                {
+                    string name = GetString(row, "title") ?? "Shows";
+                    items.Add(CreateFolder("shelf:" + EncodeId(sourceUrl!), name, GetImage(row), GetString(row, "description")));
+                }
+                else
+                {
+                    items.AddRange(ParseShowCards(GetArray(row, "mediaItems")));
+                }
+            }
+            else if (string.Equals(type, "featureShelf", StringComparison.Ordinal))
+            {
+                JsonElement features = GetArray(row, "items");
+                if (features.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (JsonElement feature in features.EnumerateArray())
+                {
+                    AddContentItem(
+                        items,
+                        GetFeatureContentLink(feature),
+                        GetString(feature, "title"),
+                        GetString(feature, "description"),
+                        GetImage(feature, "primaryImage"));
+                }
+            }
+        }
+
+        return items.GroupBy(item => item.Id, StringComparer.Ordinal).Select(group => group.First()).ToList();
+    }
+
+    private static List<ChannelItemInfo> ParseShowCards(JsonElement cards)
+    {
+        if (cards.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var items = new List<ChannelItemInfo>();
+        foreach (JsonElement card in cards.EnumerateArray())
+        {
+            string? link = GetString(GetObject(card, "contentLink"), "url");
+            string? title = GetString(card, "title") ?? GetString(GetObject(card, "image"), "altTag");
+            AddContentItem(items, link, title, GetString(card, "description"), GetImage(card));
+        }
+
+        return items.GroupBy(item => item.Id, StringComparer.Ordinal).Select(group => group.First()).ToList();
+    }
+
+    private static void AddContentItem(List<ChannelItemInfo> items, string? link, string? title, string? overview, string? image)
+    {
+        if (string.IsNullOrWhiteSpace(link)
+            || string.IsNullOrWhiteSpace(title)
+            || !TryParseContentLink(link, out string slug, out string? episodeId))
+        {
+            return;
+        }
+
+        items.Add(string.IsNullOrWhiteSpace(episodeId)
+            ? CreateFolder("show:" + EncodeId(slug), title, image, overview)
+            : CreateEpisode(episodeId, title, overview, image));
+    }
+
+    private static string? GetFeatureContentLink(JsonElement feature)
+    {
+        JsonElement buttons = GetArray(GetObject(feature, "buttonPanel"), "items");
+        if (buttons.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        JsonElement[] candidates = buttons.EnumerateArray().ToArray();
+        JsonElement infoButton = candidates.FirstOrDefault(button => GetString(button, "text") == "Info");
+        string? link = GetString(GetObject(infoButton, "contentLink"), "url");
+        if (!string.IsNullOrWhiteSpace(link))
+        {
+            return link;
+        }
+
+        return candidates
+            .Select(button => GetString(GetObject(button, "contentLink"), "url"))
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value) && !value.StartsWith("app://", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsSupportedComponentUrl(string? sourceUrl)
+    {
+        return Uri.TryCreate(sourceUrl, UriKind.Absolute, out Uri? uri)
+            && uri.Scheme == Uri.UriSchemeHttps
+            && string.Equals(uri.Host, "component.swm.digital", StringComparison.OrdinalIgnoreCase)
+            && uri.AbsolutePath.StartsWith("/v2/component/", StringComparison.Ordinal)
+            && string.IsNullOrEmpty(uri.UserInfo)
+            && uri.Port == 443;
+    }
+
     private static List<ChannelItemInfo> ParseSeasons(string showSlug, JsonElement page)
     {
         JsonElement items = GetArray(page, "items");
@@ -280,7 +422,12 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 
     private static async Task<List<ChannelItemInfo>> ParseEpisodesAsync(JsonElement response, CancellationToken cancellationToken)
     {
-        JsonElement rows = GetArray(response, "items");
+        JsonElement rows = GetArray(response, "mediaItems");
+        if (rows.ValueKind != JsonValueKind.Array)
+        {
+            rows = GetArray(response, "items");
+        }
+
         if (rows.ValueKind != JsonValueKind.Array)
         {
             return [];
@@ -293,7 +440,10 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
             string? videoId = GetString(playerData, "episodePlayerId") ?? GetString(playerData, "videoId");
             JsonElement card = GetObject(row, "cardData");
             JsonElement infoPanel = GetObject(row, "infoPanelData");
-            string? title = GetString(card, "title") ?? GetString(infoPanel, "title");
+            string? title = GetString(playerData, "title")
+                ?? GetString(card, "title")
+                ?? GetString(infoPanel, "subtitle")
+                ?? GetString(infoPanel, "title");
             if (string.IsNullOrWhiteSpace(videoId) || string.IsNullOrWhiteSpace(title))
             {
                 continue;
@@ -468,12 +618,12 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
                 : null;
     }
 
-    private static string? GetImage(JsonElement item)
+    private static string? GetImage(JsonElement item, string property = "image")
     {
-        JsonElement image = GetObject(item, "image");
+        JsonElement image = GetObject(item, property);
         string? imageUrl = GetString(image, "url");
         if (item.ValueKind == JsonValueKind.Object
-            && item.TryGetProperty("image", out JsonElement imageValue)
+            && item.TryGetProperty(property, out JsonElement imageValue)
             && imageValue.ValueKind == JsonValueKind.String)
         {
             imageUrl = imageValue.GetString();
@@ -481,7 +631,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 
         if (string.IsNullOrWhiteSpace(imageUrl))
         {
-            imageUrl = GetString(item, "imageUrl");
+            imageUrl = GetString(item, property + "Url");
         }
 
         if (imageUrl?.StartsWith("//", StringComparison.Ordinal) == true)

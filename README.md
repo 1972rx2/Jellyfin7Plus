@@ -24,7 +24,7 @@ Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build 
 
 ## Manual install
 
-1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.1-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.1-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.2-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.2-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
 2. Restart Jellyfin.
 3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
 
@@ -53,4 +53,4 @@ See [API notes](docs/API-NOTES.md) for the app services used by the plugin and i
 
 ## Verification status
 
-Both Debug and Release builds pass with no warnings. Seven local smoke checks cover direct genre navigation, DRM rejection, clear HLS selection, and unsupported media. The app sandbox has no network route to 7plus and no Jellyfin server, so device pairing, live catalogue responses, and end-to-end playback have not been verified against a running server.
+Both Debug and Release builds pass with no warnings. Ten local smoke checks cover direct genre navigation, current listing and episode response parsing, DRM rejection, clear HLS selection, and unsupported media. The public 7plus catalogue schema has been checked against live responses; account pairing and playback have not been exercised through a live Jellyfin session.
