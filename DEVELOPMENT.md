@@ -7,7 +7,8 @@ Experimental 7plus catch-up TV integration for Jellyfin. The implementation targ
 - Implemented catalogue search, topic navigation, show seasons, and episode items.
 - Implemented official 7plus device pairing without account-password handling.
 - Playback metadata rejects DRM-marked media and selects only clear HTTPS HLS sources.
-- The 0.1.0 Jellyfin 12.4 test package builds with no warnings; Debug and Release each pass six local DRM/HLS safety smoke checks.
+- Version 0.1.1 shows genre folders directly at the channel root, fixes the versioned dashboard image URL, and uses the supplied 7+ logo in the manifest and channel.
+- The Jellyfin 12.4 test package builds with no warnings; Debug and Release each pass seven local navigation and DRM/HLS smoke checks.
 - Live requests to 7plus could not be exercised in this sandbox. A Jellyfin server and an Australian 7plus account are still needed to verify pairing, catalogue response shapes, and clear-stream playback end to end.
 
 ## Remaining verification
@@ -19,4 +20,3 @@ Experimental 7plus catch-up TV integration for Jellyfin. The implementation targ
 5. Update this status after the server-side check.
 
 The plugin does not implement live TV or attempt DRM playback.
-

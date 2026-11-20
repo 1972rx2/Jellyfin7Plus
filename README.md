@@ -5,7 +5,7 @@ An early Jellyfin 12.4 channel plugin for browsing 7plus catch-up shows and play
 ## Included
 
 - 7plus branding on the channel and dashboard configuration page.
-- Browse by topic, configure a catalogue search term, then navigate shows, seasons, and episodes.
+- Open the channel to see genre folders immediately, then navigate shows, seasons, and episodes.
 - Pair a 7plus account through the official `7plus.com.au/connect` device-code flow. The Jellyfin server never asks for or stores the account password.
 - DRM-protected episodes are labelled when the 7plus component or playback metadata reports protection. The plugin refuses those episodes and never requests a DRM licence or modifies DRM media.
 - Clear HTTPS HLS playback is returned to Jellyfin with the provider user agent.
@@ -24,7 +24,7 @@ Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build 
 
 ## Manual install
 
-1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.0-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.0-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.1-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.1-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
 2. Restart Jellyfin.
 3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
 
@@ -53,5 +53,4 @@ See [API notes](docs/API-NOTES.md) for the app services used by the plugin and i
 
 ## Verification status
 
-Both Debug and Release builds pass with no warnings. Six local smoke checks cover DRM rejection, clear HLS selection, and unsupported media. The app sandbox has no network route to 7plus and no Jellyfin server, so device pairing, live catalogue responses, and end-to-end playback have not been verified against a running server.
-
+Both Debug and Release builds pass with no warnings. Seven local smoke checks cover direct genre navigation, DRM rejection, clear HLS selection, and unsupported media. The app sandbox has no network route to 7plus and no Jellyfin server, so device pairing, live catalogue responses, and end-to-end playback have not been verified against a running server.

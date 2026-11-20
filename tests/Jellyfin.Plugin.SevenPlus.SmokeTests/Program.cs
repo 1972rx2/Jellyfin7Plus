@@ -1,7 +1,18 @@
+using Jellyfin.Plugin.SevenPlus.Channels;
 using System.Text.Json;
 using Jellyfin.Plugin.SevenPlus.Services;
+using MediaBrowser.Controller.Channels;
 
 int passed = 0;
+Run("channel root lists genres directly", () =>
+{
+    var channel = new SevenPlusChannel();
+    ChannelItemResult root = channel.GetChannelItems(new InternalChannelItemQuery(), CancellationToken.None).GetAwaiter().GetResult();
+    string[] names = root.Items.Select(item => item.Name).ToArray();
+    Assert(names.Contains("Drama") && names.Contains("Reality") && names.Contains("Kids"), "Expected genre shelves at the channel root.");
+    Assert(!names.Contains("Browse shows by topic"), "The extra topic navigation folder should not be present.");
+});
+
 Run("clear HLS source is selected", () =>
 {
     using JsonDocument media = JsonDocument.Parse("""
@@ -84,4 +95,3 @@ static void Assert(bool condition, string message)
         throw new InvalidOperationException(message);
     }
 }
-

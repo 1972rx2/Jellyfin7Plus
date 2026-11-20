@@ -23,7 +23,7 @@ namespace Jellyfin.Plugin.SevenPlus.Channels;
 /// <summary>The browseable 7plus catch-up channel.</summary>
 public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 {
-    private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo.svg";
+    private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo.png";
     private static readonly (string Id, string Name, string Term)[] BrowseTopics =
     [
         ("drama", "Drama", "drama"),
@@ -74,10 +74,11 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 
         if (folderId.Length == 0)
         {
-            items =
-            [
-                CreateFolder("topics", "Browse shows by topic"),
-            ];
+            // Put the topic shelves directly at the channel root so browsing starts
+            // with catalogue content instead of an extra navigation folder.
+            items = BrowseTopics
+                .Select(topic => CreateFolder("topic:" + EncodeId(topic.Id), topic.Name))
+                .ToList();
 
             string searchTerm = SevenPlusPlugin.Instance?.Configuration.SearchTerm.Trim() ?? string.Empty;
             if (searchTerm.Length > 0)
@@ -139,7 +140,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
     {
         if (type != ImageType.Primary)
         {
-            return Task.FromResult(new DynamicImageResponse { HasImage = false, Stream = Stream.Null, Format = ImageFormat.Svg });
+            return Task.FromResult(new DynamicImageResponse { HasImage = false, Stream = Stream.Null, Format = ImageFormat.Png });
         }
 
         Stream? logo = typeof(SevenPlusChannel).Assembly.GetManifestResourceStream(ChannelLogoResource);
@@ -147,7 +148,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         {
             HasImage = logo is not null,
             Stream = logo ?? Stream.Null,
-            Format = ImageFormat.Svg,
+            Format = ImageFormat.Png,
         });
     }
 
@@ -502,4 +503,3 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         return Encoding.UTF8.GetString(Convert.FromBase64String(base64));
     }
 }
-

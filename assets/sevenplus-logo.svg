@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
-  <title id="title">7plus</title>
-  <rect width="512" height="512" rx="92" fill="#e4002b"/>
-  <path d="M90 112h239l-24 66H209l-74 222H61l80-236H69z" fill="#fff"/>
-  <path d="M365 211h54v55h55v54h-55v55h-54v-55h-55v-54h55z" fill="#fff"/>
-</svg>
-
