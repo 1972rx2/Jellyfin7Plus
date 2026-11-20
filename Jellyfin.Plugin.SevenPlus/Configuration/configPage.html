@@ -28,7 +28,7 @@
     (() => {
       const page = document.querySelector('#SevenPlusConfigPage');
       const pluginId = '4a5998a0-18da-4553-95a0-9e95540250b3';
-      const pluginVersion = '0.1.3.0';
+      const pluginVersion = '0.1.4.0';
       const logo = document.querySelector('#sevenPlusLogo');
       logo.src = ApiClient.getUrl(`Plugins/${pluginId}/${pluginVersion}/Image`);
       logo.addEventListener('error', () => logo.remove());

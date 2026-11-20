@@ -23,7 +23,7 @@ namespace Jellyfin.Plugin.SevenPlus.Channels;
 /// <summary>The browseable 7plus catch-up channel.</summary>
 public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 {
-    private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo013.png";
+    private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo.png";
     private static readonly (string Id, string Name, string Slug)[] BrowseTopics =
     [
         ("drama", "Drama", "drama"),

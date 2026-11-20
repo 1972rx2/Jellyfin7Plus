@@ -24,7 +24,7 @@ Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build 
 
 ## Manual install
 
-1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.3-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.3-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.4-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.4-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
 2. Restart Jellyfin.
 3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
 
