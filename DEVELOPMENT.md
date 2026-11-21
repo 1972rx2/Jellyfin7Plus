@@ -21,3 +21,5 @@ Experimental 7plus catch-up TV integration for Jellyfin. The implementation targ
 5. Update this status after the server-side check.
 
 The plugin does not implement live TV or attempt DRM playback.
+
+Version 0.1.6: public captured Drama catalogue parses into shelves, 41 shows, two Home and Away years and 212 episodes. Browse no longer calls authenticated playback for every episode; unknown protection is stated in episode details and enforced at playback. Release smoke checks: 15 passed. Live Jellyfin playback remains unverified.

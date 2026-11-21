@@ -449,7 +449,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         return seasons;
     }
 
-    private static async Task<List<ChannelItemInfo>> ParseEpisodesAsync(JsonElement response, CancellationToken cancellationToken)
+    private static Task<List<ChannelItemInfo>> ParseEpisodesAsync(JsonElement response, CancellationToken cancellationToken)
     {
         JsonElement rows = GetArray(response, "mediaItems");
         if (rows.ValueKind != JsonValueKind.Array)
@@ -459,7 +459,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 
         if (rows.ValueKind != JsonValueKind.Array)
         {
-            return [];
+            throw new InvalidOperationException("7plus returned no episode array for this season.");
         }
 
         var episodes = new List<(JsonElement Row, ChannelItemInfo Item, bool HasDrmMetadata)>();
@@ -489,33 +489,21 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
             episodes.Add((row, item, isDrm));
         }
 
-        // Season cards do not consistently expose protection metadata. Ask 7plus's playback
-        // metadata endpoint for a yes/no status and discard all returned sources at this stage.
-        using var throttle = new SemaphoreSlim(4, 4);
-        Task[] checks = episodes.Where(episode => !episode.HasDrmMetadata).Select(async episode =>
+        // Browsing must not wait for one authenticated playback request per episode.
+        // Unknown protection is stated explicitly; playback always checks provider metadata.
+        foreach (var episode in episodes.Where(episode => !episode.HasDrmMetadata))
         {
-            await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                PlaybackResult playback = await SevenPlusApiClient.GetPlaybackAsync(DecodeId(episode.Item.Id["video:".Length..]), cancellationToken).ConfigureAwait(false);
-                if (playback.IsDrmProtected)
-                {
-                    MarkDrmProtected(episode.Item);
-                }
-            }
-            catch (Exception ex) when (!cancellationToken.IsCancellationRequested
-                && ex is HttpRequestException or InvalidOperationException or TaskCanceledException)
-            {
-                // If 7plus does not provide an assessment, the episode remains available for
-                // playback-time checking instead of being incorrectly labelled as DRM.
-            }
-            finally
-            {
-                throttle.Release();
-            }
-        }).ToArray();
-        await Task.WhenAll(checks).ConfigureAwait(false);
-        return episodes.Select(episode => episode.Item).ToList();
+            episode.Item.Overview += Environment.NewLine + Environment.NewLine
+                + "DRM status unknown. Protection is checked when playback starts; protected episodes cannot play in Jellyfin.";
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (episodes.Count == 0)
+        {
+            throw new InvalidOperationException($"7plus returned {rows.GetArrayLength()} season cards but no supported episode IDs.");
+        }
+
+        return Task.FromResult(episodes.Select(episode => episode.Item).ToList());
     }
 
     private static void MarkDrmProtected(ChannelItemInfo item)

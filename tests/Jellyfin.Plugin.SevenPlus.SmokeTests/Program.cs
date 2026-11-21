@@ -159,6 +159,36 @@ Run("episode card DRM metadata is detected", () =>
     Assert(SevenPlusApiClient.IsDrmMarked(row.RootElement), "Expected the episode card to be marked DRM-protected.");
 });
 
+Run("large seasons browse without playback requests", () =>
+{
+    var rows = Enumerable.Range(1, 212).Select(i => new
+    {
+        playerData = new { episodePlayerId = "TEST-" + i, title = "Episode " + i },
+    });
+    using JsonDocument page = JsonDocument.Parse(JsonSerializer.Serialize(new { mediaItems = rows }));
+    var watch = System.Diagnostics.Stopwatch.StartNew();
+    List<ChannelItemInfo> episodes = InvokeEpisodeParser(page.RootElement);
+    Assert(episodes.Count == 212 && watch.Elapsed < TimeSpan.FromSeconds(2), "Expected all episodes without waiting for playback lookups.");
+    Assert(episodes.All(item => item.Overview.Contains("DRM status unknown", StringComparison.Ordinal)), "Unverified episodes must not be described as clear.");
+});
+
+if (File.Exists("work/season-False.json"))
+{
+    Run("captured public catalogue navigates genre, shelf, show and season", () =>
+    {
+        using JsonDocument genre = JsonDocument.Parse(File.ReadAllText("work/drama-live.json"));
+        using JsonDocument shelf = JsonDocument.Parse(File.ReadAllText("work/shelf-live.json"));
+        using JsonDocument show = JsonDocument.Parse(File.ReadAllText("work/show-live.json"));
+        using JsonDocument season = JsonDocument.Parse(File.ReadAllText("work/season-False.json"));
+        Assert(InvokeListParser("ParseListingPage", genre.RootElement).Count > 0, "Genre must contain shelves.");
+        Assert(InvokeListParser("ParseShelf", shelf.RootElement).Count == 41, "Expected the 41 captured shows.");
+        MethodInfo method = typeof(SevenPlusChannel).GetMethod("ParseSeasons", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var seasons = (List<ChannelItemInfo>)method.Invoke(null, ["home-and-away", show.RootElement])!;
+        Assert(seasons.Count == 2, "Expected two captured years.");
+        Assert(InvokeEpisodeParser(season.RootElement).Count == 212, "Expected 212 captured episodes.");
+    });
+}
+
 Console.WriteLine($"{passed} 7plus catalogue and playback smoke checks passed.");
 return 0;
 

@@ -24,7 +24,7 @@ Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build 
 
 ## Manual install
 
-1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.5-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.5-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.6-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.6-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
 2. Restart Jellyfin.
 3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
 
@@ -54,3 +54,4 @@ See [API notes](docs/API-NOTES.md) for the app services used by the plugin and i
 ## Verification status
 
 Both Debug and Release builds pass with no warnings. Thirteen local smoke checks cover plugin assembly loading, direct genre navigation, current listing and episode response parsing, surfaced empty-page and empty-shelf errors, DRM rejection, clear HLS selection, and unsupported media. Catalogue and market requests are sent without the paired account token; playback metadata remains authenticated. Account pairing and playback have not been exercised through a live Jellyfin session.
+
