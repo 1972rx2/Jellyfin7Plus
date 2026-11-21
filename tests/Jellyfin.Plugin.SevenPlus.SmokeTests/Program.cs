@@ -1,11 +1,19 @@
 using Jellyfin.Plugin.SevenPlus.Channels;
 using System.Reflection;
 using System.Text.Json;
+using Jellyfin.Plugin.SevenPlus;
 using Jellyfin.Plugin.SevenPlus.Services;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 
 int passed = 0;
+Run("plugin assembly types load against Jellyfin 12.4 references", () =>
+{
+    Type[] pluginTypes = typeof(SevenPlusPlugin).Assembly.GetTypes();
+    Assert(pluginTypes.Any(type => type == typeof(SevenPlusPlugin))
+        && pluginTypes.Any(type => type == typeof(SevenPlusChannel)), "Expected the plugin and channel types to be loadable.");
+});
+
 Run("channel root lists genres directly", () =>
 {
     var channel = new SevenPlusChannel();
@@ -28,6 +36,25 @@ Run("7plus listing pages expose featured shows and shelf folders", () =>
     Assert(items.Any(item => item.Name == "The Rookie" && item.Id.StartsWith("show:", StringComparison.Ordinal)), "Expected the featured show folder.");
     Assert(items.Any(item => item.Name == "Recently Added" && item.Id.StartsWith("shelf:", StringComparison.Ordinal)), "Expected a fetchable shelf folder.");
     Assert(items.Any(item => item.Name == "The Reunion" && item.Id.StartsWith("show:", StringComparison.Ordinal)), "Expected the featured show card.");
+});
+
+Run("unsupported listing page cards are reported", () =>
+{
+    using JsonDocument page = JsonDocument.Parse("""
+        {"type":"listingPage","items":[{"type":"newFeatureShelf"}]}
+        """);
+    bool reported = false;
+    try
+    {
+        _ = InvokeListParser("ParseListingPage", page.RootElement);
+    }
+    catch (TargetInvocationException ex) when (ex.InnerException is InvalidOperationException message
+        && message.Message.Contains("newFeatureShelf", StringComparison.Ordinal))
+    {
+        reported = true;
+    }
+
+    Assert(reported, "Expected unsupported listing card types to be surfaced instead of an empty folder.");
 });
 
 Run("live 7plus shelf response produces show items", () =>

@@ -7,8 +7,9 @@ Experimental 7plus catch-up TV integration for Jellyfin. The implementation targ
 - Implemented catalogue search, topic navigation, show seasons, and episode items.
 - Implemented official 7plus device pairing without account-password handling.
 - Playback metadata rejects DRM-marked media and selects only clear HTTPS HLS sources.
-- Version 0.1.4 requests public component shelves without a bearer token, rejects empty or unsupported shelf responses instead of silently returning an empty folder, increments the channel data version to invalidate old results, and uses a versioned catalog image URL while preserving Jellyfin's embedded image resource name.
-- The Jellyfin 12.4 test package builds with no warnings; Debug and Release each pass eleven local navigation, current-response parsing, empty-shelf reporting, and DRM/HLS smoke checks.
+- Version 0.1.5 makes every public catalogue and market lookup independent of saved account tokens; only playback metadata uses the paired account. This prevents stale or account-filtered credentials from blanking browse results.
+- Version 0.1.4 rejects empty or unsupported component shelves instead of silently returning an empty folder, increments the channel data version to invalidate old results, and uses a versioned catalog image URL while preserving Jellyfin's embedded image resource name.
+- The Jellyfin 12.4 test package builds with no warnings; Debug and Release each pass local navigation, current-response parsing, empty-shelf reporting, and DRM/HLS smoke checks.
 - The public 7plus catalogue responses are checked directly, including the live “Aussie Drama” component, which currently returns 41 show cards. Account pairing and playback still need verification through the user's Jellyfin server.
 
 ## Remaining verification

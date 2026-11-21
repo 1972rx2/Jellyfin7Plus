@@ -258,7 +258,7 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
         JsonElement rows = GetArray(page, "items");
         if (rows.ValueKind != JsonValueKind.Array)
         {
-            return [];
+            throw new InvalidOperationException($"7plus content page returned no item list (response type: {GetString(page, "type") ?? "unknown"}). Check the Jellyfin server log and update the plugin cache.");
         }
 
         var items = new List<ChannelItemInfo>();
@@ -307,7 +307,18 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
             }
         }
 
-        return items.GroupBy(item => item.Id, StringComparer.Ordinal).Select(group => group.First()).ToList();
+        List<ChannelItemInfo> distinctItems = items.GroupBy(item => item.Id, StringComparer.Ordinal).Select(group => group.First()).ToList();
+        if (distinctItems.Count == 0)
+        {
+            string pageType = GetString(page, "type") ?? "unknown";
+            string itemTypes = string.Join(", ", rows.EnumerateArray()
+                .Select(row => GetString(row, "type") ?? "unknown")
+                .Distinct(StringComparer.Ordinal)
+                .Take(8));
+            throw new InvalidOperationException($"7plus content page returned no supported items (response type: {pageType}, items: {rows.GetArrayLength()}, item types: {itemTypes}). Check the Jellyfin server log and update the plugin cache.");
+        }
+
+        return distinctItems;
     }
 
     private static List<ChannelItemInfo> ParseShowCards(JsonElement cards)

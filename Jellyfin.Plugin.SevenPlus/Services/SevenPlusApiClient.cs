@@ -50,14 +50,13 @@ public static class SevenPlusApiClient
         ArgumentNullException.ThrowIfNull(searchTerm);
         PluginConfiguration configuration = GetConfiguration();
         int marketId = await GetMarketIdAsync(configuration, cancellationToken).ConfigureAwait(false);
-        await EnsureFreshTokenAsync(configuration, cancellationToken).ConfigureAwait(false);
         string url = BuildUrl(SearchUrl,
             ("searchTerm", searchTerm.Trim()),
             ("platform-id", PlatformId),
             ("market-id", marketId.ToString(CultureInfo.InvariantCulture)),
             ("platform-version", PlatformVersion),
             ("api-version", ApiVersion));
-        return await GetJsonAsync(url, cancellationToken).ConfigureAwait(false);
+        return await GetCatalogJsonAsync(url, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Gets the 7plus content page for a show slug.</summary>
@@ -65,13 +64,12 @@ public static class SevenPlusApiClient
     {
         PluginConfiguration configuration = GetConfiguration();
         int marketId = await GetMarketIdAsync(configuration, cancellationToken).ConfigureAwait(false);
-        await EnsureFreshTokenAsync(configuration, cancellationToken).ConfigureAwait(false);
         string url = BuildUrl(ContentUrl + "/" + Uri.EscapeDataString(slug),
             ("platform-id", PlatformId),
             ("market-id", marketId.ToString(CultureInfo.InvariantCulture)),
             ("platform-version", PlatformVersion),
             ("api-version", ApiVersion));
-        return await GetJsonAsync(url, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
+        return await GetCatalogJsonAsync(url, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
     }
 
     /// <summary>Gets the episodes attached to a show season component.</summary>
@@ -79,7 +77,6 @@ public static class SevenPlusApiClient
     {
         PluginConfiguration configuration = GetConfiguration();
         int marketId = await GetMarketIdAsync(configuration, cancellationToken).ConfigureAwait(false);
-        await EnsureFreshTokenAsync(configuration, cancellationToken).ConfigureAwait(false);
         string url = BuildUrl(ComponentUrl + "/" + Uri.EscapeDataString(showSlug),
             ("component-id", componentId),
             ("platform-id", ComponentPlatformId),
@@ -87,7 +84,7 @@ public static class SevenPlusApiClient
             ("platform-version", ComponentPlatformVersion),
             ("api-version", ComponentApiVersion),
             ("signedUp", string.IsNullOrWhiteSpace(configuration.AccessToken) ? "False" : "True"));
-        return await GetJsonAsync(url, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
+        return await GetCatalogJsonAsync(url, cancellationToken, ("market-id", marketId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
     }
 
     /// <summary>Gets a 7plus media shelf using its provider-supplied component URL.</summary>
@@ -138,7 +135,7 @@ public static class SevenPlusApiClient
             ("ozid", VodOzid),
             ("sdkverification", "true"));
 
-        using JsonDocument document = await GetJsonAsync(url, cancellationToken).ConfigureAwait(false);
+        using JsonDocument document = await GetPlaybackJsonAsync(url, cancellationToken).ConfigureAwait(false);
         JsonElement media = document.RootElement.TryGetProperty("media", out JsonElement foundMedia) ? foundMedia : default;
         return EvaluatePlaybackMedia(media);
     }
@@ -384,7 +381,7 @@ public static class SevenPlusApiClient
         string url = BuildUrl(MarketUrl, ("apikey", "web"));
         try
         {
-            using JsonDocument document = await GetJsonAsync(url, cancellationToken).ConfigureAwait(false);
+            using JsonDocument document = await GetCatalogJsonAsync(url, cancellationToken).ConfigureAwait(false);
             int marketId = GetInt32(document.RootElement, "_id", 4);
             configuration.MarketId = marketId > 0 ? marketId : 4;
             SevenPlusPlugin.Instance?.SaveConfiguration(configuration);
@@ -397,9 +394,14 @@ public static class SevenPlusApiClient
         return configuration.MarketId;
     }
 
-    private static async Task<JsonDocument> GetJsonAsync(string url, CancellationToken cancellationToken, params (string Name, string Value)[] extraHeaders)
+    private static Task<JsonDocument> GetCatalogJsonAsync(string url, CancellationToken cancellationToken, params (string Name, string Value)[] extraHeaders)
     {
-        return await GetJsonCoreAsync(url, includeAccountToken: true, extraHeaders, cancellationToken).ConfigureAwait(false);
+        return GetJsonCoreAsync(url, includeAccountToken: false, extraHeaders, cancellationToken);
+    }
+
+    private static Task<JsonDocument> GetPlaybackJsonAsync(string url, CancellationToken cancellationToken, params (string Name, string Value)[] extraHeaders)
+    {
+        return GetJsonCoreAsync(url, includeAccountToken: true, extraHeaders, cancellationToken);
     }
 
     private static async Task<JsonDocument> GetJsonCoreAsync(

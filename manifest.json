@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/assets/sevenplus-logo-0.1.4.png",
     "versions": [
       {
+        "version": "0.1.5.0",
+        "changelog": "Keep public catalogue and market requests independent of saved account tokens; use the paired account only for playback metadata so sign-in state cannot filter browse results.",
+        "targetAbi": "12.4.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.5-jellyfin12.4-test.zip",
+        "checksum": "bbadc995cf26aa9ff4963b1c47c42909",
+        "timestamp": "2026-11-21 00:08:52"
+      },
+      {
         "version": "0.1.4.0",
         "changelog": "Refreshes empty Jellyfin channel caches, loads public 7plus component shelves without account-token filtering, reports unexpected empty shelf responses, and cache-busts the updated 7+ logo while preserving Jellyfin's image resource convention.",
         "targetAbi": "12.4.0.0",

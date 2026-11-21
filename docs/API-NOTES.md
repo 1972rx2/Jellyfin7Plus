@@ -1,6 +1,6 @@
 # 7plus API notes
 
-The 7plus website's public app uses separate services for catalogue search, show pages, episode components, account pairing, and playback. These are app endpoints rather than a published developer API, so response shapes and required parameters can change. Catalogue requests use the public app endpoints without the account bearer token; the paired token is reserved for playback metadata.
+The 7plus website's public app uses separate services for catalogue search, show pages, episode components, account pairing, and playback. These are app endpoints rather than a published developer API, so response shapes and required parameters can change. Catalogue and market requests use public app endpoints without the account bearer token; the paired token is reserved for playback metadata.
 
 | Purpose | Service | Plugin use |
 | --- | --- | --- |
