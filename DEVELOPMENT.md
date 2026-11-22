@@ -29,3 +29,9 @@ Version 0.1.7 adds an elevated Check and refresh catalogue dashboard action, unc
 Version 0.1.8 fixes root-relative catalogue links being parsed as implicit file URIs on Unix. Resolve links against the 7plus HTTPS origin before validating scheme and host. Includes a reduced 41-card market 26 fixture and Windows/Linux CI. Server browsing and playback still need post-update confirmation.
 
 0.1.8 packaging: remove the embedded provider application key. An optional per-server ProviderApiKey configuration supplies that header only when configured. Catalogue checks run without an embedded key.
+
+## Installation troubleshooting
+
+An empty version folder without a plugin manifest can interfere with Jellyfin's duplicate-plugin discovery. Unmanifested folders receive generated identities, while duplicate cleanup groups folders by plugin name. A leftover empty directory can therefore cause a valid newer installation to be removed during startup.
+
+When diagnosing a repeated restart requirement, check whether the new DLL survives startup and whether older version directories are empty or missing their manifests. Move confirmed empty orphan directories to a backup outside the plugins directory before reinstalling. Preserve plugin configuration files. Verify the loaded version in the startup log and the dashboard after restart.
