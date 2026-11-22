@@ -83,7 +83,7 @@ public sealed class SevenPlusAuthController : ControllerBase
 
     /// <summary>Gets the local sign-in state without exposing account tokens.</summary>
     [HttpGet("status")]
-    public ActionResult<LoginStatus> Status()
+    public ActionResult<LoginSessionStatus> Status()
     {
         SevenPlusPlugin? plugin = SevenPlusPlugin.Instance;
         if (plugin is null)
@@ -91,7 +91,20 @@ public sealed class SevenPlusAuthController : ControllerBase
             return Problem("The 7plus plugin is not initialized.", statusCode: 503);
         }
 
-        return Ok(new LoginStatus(!string.IsNullOrWhiteSpace(plugin.Configuration.AccessToken)));
+        return Ok(LoginSessionStatus.FromSavedSession(plugin.Configuration));
+    }
+
+    /// <summary>Asks 7plus to refresh the saved session before reporting it as verified.</summary>
+    [HttpPost("validate")]
+    public async Task<ActionResult<LoginSessionStatus>> Validate(CancellationToken cancellationToken)
+    {
+        SevenPlusPlugin? plugin = SevenPlusPlugin.Instance;
+        if (plugin is null)
+        {
+            return Problem("The 7plus plugin is not initialized.", statusCode: 503);
+        }
+
+        return Ok(await SevenPlusApiClient.ValidateLoginAsync(plugin.Configuration, cancellationToken).ConfigureAwait(false));
     }
 
     /// <summary>Starts an official 7plus device-code sign-in.</summary>
@@ -117,7 +130,7 @@ public sealed class SevenPlusAuthController : ControllerBase
         }
 
         DeviceLoginCompletion completion = await SevenPlusApiClient.CompleteDeviceLoginAsync(cancellationToken).ConfigureAwait(false);
-        return Ok(new LoginStatus(completion.Complete || !string.IsNullOrWhiteSpace(plugin.Configuration.AccessToken), completion.Detail));
+        return Ok(new LoginStatus(completion.Complete, completion.Detail));
     }
 
     /// <summary>Removes the saved 7plus account session.</summary>

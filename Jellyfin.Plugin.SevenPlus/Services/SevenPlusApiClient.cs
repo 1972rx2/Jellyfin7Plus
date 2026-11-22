@@ -303,7 +303,41 @@ public static class SevenPlusApiClient
         }
     }
 
-    private static async Task EnsureFreshTokenAsync(PluginConfiguration configuration, CancellationToken cancellationToken)
+    /// <summary>Tests the saved session through the official token refresh endpoint.</summary>
+    public static async Task<LoginSessionStatus> ValidateLoginAsync(PluginConfiguration configuration, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        LoginSessionStatus saved = LoginSessionStatus.FromSavedSession(configuration);
+        if (saved.State != "unverified")
+        {
+            return saved;
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration.RefreshToken))
+        {
+            return new(false, "A session is saved but cannot be refreshed. Sign in again to verify your account.", "unverified");
+        }
+
+        try
+        {
+            await EnsureFreshTokenAsync(configuration, cancellationToken, forceRefresh: true).ConfigureAwait(false);
+            return new(true, "7plus accepted the saved session. DRM-protected episodes still cannot play here.", "verified");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.BadRequest)
+        {
+            return new(false, "7plus rejected the refresh request. Check the application key; if it is correct, sign in again.", "rejected");
+        }
+        catch (HttpRequestException)
+        {
+            return new(false, "Could not verify the session with 7plus. Check the server connection and try again.", "unavailable");
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new(false, "7plus did not respond in time. The saved session has not been verified.", "unavailable");
+        }
+    }
+
+    private static async Task EnsureFreshTokenAsync(PluginConfiguration configuration, CancellationToken cancellationToken, bool forceRefresh = false)
     {
         if (string.IsNullOrWhiteSpace(configuration.AccessToken)
             && string.IsNullOrWhiteSpace(configuration.RefreshToken))
@@ -311,7 +345,7 @@ public static class SevenPlusApiClient
             return;
         }
 
-        if (configuration.TokenExpiresAtUnixSeconds > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
+        if (!forceRefresh && configuration.TokenExpiresAtUnixSeconds > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
         {
             return;
         }
@@ -319,7 +353,7 @@ public static class SevenPlusApiClient
         await TokenLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (configuration.TokenExpiresAtUnixSeconds > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
+            if (!forceRefresh && configuration.TokenExpiresAtUnixSeconds > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
             {
                 return;
             }

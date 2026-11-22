@@ -35,3 +35,9 @@ Version 0.1.8 fixes root-relative catalogue links being parsed as implicit file 
 An empty version folder without a plugin manifest can interfere with Jellyfin's duplicate-plugin discovery. Unmanifested folders receive generated identities, while duplicate cleanup groups folders by plugin name. A leftover empty directory can therefore cause a valid newer installation to be removed during startup.
 
 When diagnosing a repeated restart requirement, check whether the new DLL survives startup and whether older version directories are empty or missing their manifests. Move confirmed empty orphan directories to a backup outside the plugins directory before reinstalling. Preserve plugin configuration files. Verify the loaded version in the startup log and the dashboard after restart.
+
+## Authentication diagnostics
+
+The official device authorization endpoint rejects a request without the provider application key (HTTP 401); the same request with the previously used key returns a pairing code. Version 0.1.8 removed the embedded key and therefore requires existing installations to configure it locally for authentication. Public catalogue access remains independent of account tokens. No application key or account credential is included in this change.
+
+The dashboard now reports saved credentials as unverified, identifies missing application configuration and expired sessions, and verifies a session through the official refresh endpoint only when Check sign-in status is selected. A pairing poll cannot report success just because an older access token exists. Release build and 20 local smoke checks pass. These source changes are pending a packaged release; live clear-stream playback remains unverified.

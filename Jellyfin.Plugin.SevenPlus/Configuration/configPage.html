@@ -149,11 +149,13 @@
       async function checkLoginStatus(showPending) {
         const statusMessage = document.querySelector('#loginStatus');
         try {
-          const response = await ApiClient.fetch({ url: ApiClient.getUrl('SevenPlus/Auth/status') });
+          statusMessage.textContent = showPending ? 'Checking the saved session with 7plus…' : '';
+          statusMessage.style.display = showPending ? 'block' : 'none';
+          const response = await ApiClient.fetch({ type: showPending ? 'POST' : 'GET', url: ApiClient.getUrl(showPending ? 'SevenPlus/Auth/validate' : 'SevenPlus/Auth/status') });
           if (typeof response.ok === 'boolean' && !response.ok) throw new Error('Status request failed.');
           const status = typeof response.json === 'function' ? await response.json() : response;
-          statusMessage.textContent = status.complete || status.Complete ? '7plus sign-in complete.' : '7plus is not signed in.';
-          statusMessage.style.display = showPending || status.complete || status.Complete ? 'block' : 'none';
+          statusMessage.textContent = status.detail || status.Detail || 'The sign-in state could not be verified.';
+          statusMessage.style.display = 'block';
         } catch (error) {
           if (showPending) {
             statusMessage.textContent = 'Jellyfin could not check the sign-in state. Restart Jellyfin after updating the plugin, then try again.';

@@ -8,6 +8,32 @@ using MediaBrowser.Model.Channels;
 using Microsoft.Extensions.Logging;
 
 int passed = 0;
+Run("saved credentials never imply provider-verified sign-in", () =>
+{
+    var configuration = new Jellyfin.Plugin.SevenPlus.Configuration.PluginConfiguration();
+    Assert(LoginSessionStatus.FromSavedSession(configuration).State == "signedOut", "Expected an empty configuration to be signed out.");
+    configuration.AccessToken = "test-access-token";
+    configuration.RefreshToken = "test-refresh-token";
+    configuration.TokenExpiresAtUnixSeconds = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds();
+    LoginSessionStatus missingKey = LoginSessionStatus.FromSavedSession(configuration);
+    Assert(!missingKey.Complete && missingKey.State == "applicationKeyMissing", "Saved tokens must not hide missing application configuration.");
+    configuration.ProviderApiKey = "test-application-key";
+    LoginSessionStatus saved = LoginSessionStatus.FromSavedSession(configuration);
+    Assert(!saved.Complete && saved.State == "unverified", "Even unexpired saved credentials need provider verification.");
+    configuration.TokenExpiresAtUnixSeconds = 0;
+    Assert(LoginSessionStatus.FromSavedSession(configuration).State == "unverified", "An expired session with a refresh token can still be tested.");
+    configuration.RefreshToken = string.Empty;
+    Assert(LoginSessionStatus.FromSavedSession(configuration).State == "expired", "An expired session without refresh credentials needs pairing.");
+    Assert(!saved.Detail.Contains(configuration.AccessToken, StringComparison.Ordinal), "Status must not expose credentials.");
+});
+
+Run("login validation does not send incomplete sessions to the provider", () =>
+{
+    var configuration = new Jellyfin.Plugin.SevenPlus.Configuration.PluginConfiguration { AccessToken = "test-access-token" };
+    LoginSessionStatus result = SevenPlusApiClient.ValidateLoginAsync(configuration, CancellationToken.None).GetAwaiter().GetResult();
+    Assert(!result.Complete && result.State == "applicationKeyMissing", "Missing application configuration must produce actionable local feedback.");
+});
+
 Run("plugin assembly types load against Jellyfin 12.4 references", () =>
 {
     Type[] pluginTypes = typeof(SevenPlusPlugin).Assembly.GetTypes();
