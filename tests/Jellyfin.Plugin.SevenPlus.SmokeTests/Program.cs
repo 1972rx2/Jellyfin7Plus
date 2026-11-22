@@ -208,6 +208,29 @@ Run("browse exceptions are logged before Jellyfin can hide them", () =>
     Assert(!logger.Message.Contains("private-id", StringComparison.Ordinal), "Only the folder kind should be included in the log message.");
 });
 
+Run("market 26 catalogue accepts all 41 root-relative show links", () =>
+{
+    using JsonDocument shelf = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "market26-shelf.json")));
+    List<ChannelItemInfo> shows = InvokeListParser("ParseShelf", shelf.RootElement);
+    Assert(shows.Count == 41 && shows.All(item => item.Id.StartsWith("show:", StringComparison.Ordinal)), "All 41 captured market 26 show cards must be navigable on Windows and Linux.");
+});
+
+Run("website links resolve consistently and reject other origins and schemes", () =>
+{
+    MethodInfo parser = typeof(SevenPlusChannel).GetMethod("TryParseContentLink", BindingFlags.NonPublic | BindingFlags.Static)!;
+    foreach (string link in new[] { "/home-and-away?episode-id=HAAW39-092", "home-and-away?episode-id=HAAW39-092", "https://7plus.com.au/home-and-away?episode-id=HAAW39-092" })
+    {
+        object?[] arguments = [link, null, null];
+        Assert((bool)parser.Invoke(null, arguments)! && (string?)arguments[1] == "home-and-away" && (string?)arguments[2] == "HAAW39-092", "Expected a website show link and episode ID: " + link);
+    }
+
+    foreach (string link in new[] { "file:///home-and-away", "ftp://7plus.com.au/home-and-away", "https://example.test/home-and-away", "//example.test/home-and-away", "https://user@7plus.com.au/home-and-away" })
+    {
+        object?[] arguments = [link, null, null];
+        Assert(!(bool)parser.Invoke(null, arguments)!, "Expected unsupported link to be rejected: " + link);
+    }
+});
+
 Console.WriteLine($"{passed} 7plus catalogue and playback smoke checks passed.");
 return 0;
 

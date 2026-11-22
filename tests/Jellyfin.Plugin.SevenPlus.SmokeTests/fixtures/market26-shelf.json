@@ -1,0 +1,334 @@
+{
+  "title": "Aussie Drama",
+  "type": "mediaShelf",
+  "mediaItems": [
+    {
+      "type": "SeriesCard",
+      "title": "Peter Allen - Not The Boy Next Door",
+      "contentLink": {
+        "url": "/peter-allen-not-the-boy-next-door",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Winners & Losers",
+      "contentLink": {
+        "url": "/winners-losers",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Coolangatta Gold",
+      "contentLink": {
+        "url": "/the-coolangatta-gold",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Secret Life Of Us",
+      "contentLink": {
+        "url": "/the-secret-life-of-us",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Number 96 (The Movie)",
+      "contentLink": {
+        "url": "/number-96-the-movie",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Sons And Daughters",
+      "contentLink": {
+        "url": "/sons-and-daughters",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Blue Murder",
+      "contentLink": {
+        "url": "/blue-murder",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Interview",
+      "contentLink": {
+        "url": "/the-interview",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "RFDS",
+      "contentLink": {
+        "url": "/rfds",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Always Greener",
+      "contentLink": {
+        "url": "/always-greener",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Beautiful Lie",
+      "contentLink": {
+        "url": "/the-beautiful-lie",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "A Country Practice",
+      "contentLink": {
+        "url": "/a-country-practice",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Blue Murder: Killer Cop",
+      "contentLink": {
+        "url": "/blue-murder-killer-cop",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Water Rats",
+      "contentLink": {
+        "url": "/water-rats",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Quigley Down Under",
+      "contentLink": {
+        "url": "/quigley-down-under",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "All Saints",
+      "contentLink": {
+        "url": "/all-saints",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Alice",
+      "contentLink": {
+        "url": "/the-alice",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Club",
+      "contentLink": {
+        "url": "/the-club",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Packed To The Rafters",
+      "contentLink": {
+        "url": "/packed-to-the-rafters",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Rip Tide",
+      "contentLink": {
+        "url": "/rip-tide",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Winter",
+      "contentLink": {
+        "url": "/winter",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "800 Words",
+      "contentLink": {
+        "url": "/800-words",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Return To Eden (Mini-Series)",
+      "contentLink": {
+        "url": "/return-to-eden",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Big Sky",
+      "contentLink": {
+        "url": "/big-sky",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Surgeon",
+      "contentLink": {
+        "url": "/the-surgeon",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Dangerous",
+      "contentLink": {
+        "url": "/dangerous",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Blue Heelers",
+      "contentLink": {
+        "url": "/blue-heelers",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Killing Field",
+      "contentLink": {
+        "url": "/the-killing-field",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Home and Away",
+      "contentLink": {
+        "url": "/home-and-away",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Stingers",
+      "contentLink": {
+        "url": "/stingers",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Rescue: Special Ops",
+      "contentLink": {
+        "url": "/rescue-special-ops",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Secret Bridesmaids' Business",
+      "contentLink": {
+        "url": "/secret-bridesmaids-business",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Between Two Worlds",
+      "contentLink": {
+        "url": "/between-two-worlds",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "A Place To Call Home",
+      "contentLink": {
+        "url": "/a-place-to-call-home",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Rain Shadow",
+      "contentLink": {
+        "url": "/rain-shadow",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Return To Eden (The Series)",
+      "contentLink": {
+        "url": "/return-to-eden-1",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Attack Force Z",
+      "contentLink": {
+        "url": "/attack-force-z",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Claremont Murders",
+      "contentLink": {
+        "url": "/the-claremont-murders",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "Made In Bondi",
+      "contentLink": {
+        "url": "/made-in-bondi",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Lighthorsemen",
+      "contentLink": {
+        "url": "/the-lighthorsemen",
+        "type": "navigationItem"
+      }
+    },
+    {
+      "type": "SeriesCard",
+      "title": "The Furnace",
+      "contentLink": {
+        "url": "/the-furnace",
+        "type": "navigationItem"
+      }
+    }
+  ]
+}

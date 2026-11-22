@@ -25,3 +25,5 @@ The plugin does not implement live TV or attempt DRM playback.
 Version 0.1.6: public captured Drama catalogue parses into shelves, 41 shows, two Home and Away years and 212 episodes. Browse no longer calls authenticated playback for every episode; unknown protection is stated in episode details and enforced at playback. Release smoke checks: 15 passed. Live Jellyfin playback remains unverified.
 
 Version 0.1.7 adds an elevated Check and refresh catalogue dashboard action, uncached navigation checks and a 7plus-only cache revision. Browse successes and exceptions are logged with folder kind and count; tokens are not included. Server-side cause of empty shelves remains unconfirmed until the diagnostic is run on the user's server.
+
+Version 0.1.8 fixes root-relative catalogue links being parsed as implicit file URIs on Unix. Resolve links against the 7plus HTTPS origin before validating scheme and host. Includes a reduced 41-card market 26 fixture and Windows/Linux CI. Server browsing and playback still need post-update confirmation.

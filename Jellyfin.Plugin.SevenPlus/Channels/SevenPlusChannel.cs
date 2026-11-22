@@ -615,16 +615,17 @@ public sealed partial class SevenPlusChannel : IChannel, IRequiresMediaInfoCallb
     {
         slug = string.Empty;
         episodeId = null;
-        if (!Uri.TryCreate(link, UriKind.Absolute, out Uri? uri))
+        // Resolve website paths against the website first. On Unix, parsing "/show"
+        // with UriKind.Absolute succeeds as file:///show instead of an HTTPS link.
+        if (!Uri.TryCreate(new Uri("https://7plus.com.au/"), link, out Uri? uri))
         {
-            if (!Uri.TryCreate(new Uri("https://7plus.com.au/"), link, out uri))
-            {
-                return false;
-            }
+            return false;
         }
 
-        if (!string.Equals(uri.Host, "7plus.com.au", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(uri.Host, "www.7plus.com.au", StringComparison.OrdinalIgnoreCase))
+        if (uri.Scheme != Uri.UriSchemeHttps
+            || !string.IsNullOrEmpty(uri.UserInfo)
+            || (!string.Equals(uri.Host, "7plus.com.au", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(uri.Host, "www.7plus.com.au", StringComparison.OrdinalIgnoreCase)))
         {
             return false;
         }
