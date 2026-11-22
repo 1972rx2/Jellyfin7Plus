@@ -17,12 +17,31 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jellyfin.Plugin.SevenPlus.Channels;
 
 /// <summary>The browseable 7plus catch-up channel.</summary>
-public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
+public sealed partial class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback, IHasCacheKey
 {
+    private readonly ILogger<SevenPlusChannel> _logger;
+
+    /// <summary>Initializes the channel with server-side browse error logging.</summary>
+    public SevenPlusChannel(ILogger<SevenPlusChannel>? logger = null)
+    {
+        _logger = logger ?? NullLogger<SevenPlusChannel>.Instance;
+    }
+
+    /// <inheritdoc />
+    public string GetCacheKey(string? userId) => SevenPlusPlugin.Instance?.Configuration.CatalogueCacheRevision ?? string.Empty;
+
+    [LoggerMessage(EventId = 701, Level = LogLevel.Error, Message = "7plus failed to load folder kind {FolderKind}.")]
+    private static partial void LogBrowseFailure(ILogger logger, string folderKind, Exception exception);
+
+    [LoggerMessage(EventId = 700, Level = LogLevel.Information, Message = "7plus loaded folder kind {FolderKind}: {ItemCount} items.")]
+    private static partial void LogBrowseLoaded(ILogger logger, string folderKind, int itemCount);
+
     private const string ChannelLogoResource = "Jellyfin.Plugin.SevenPlus.Assets.SevenPlusLogo.png";
     private static readonly (string Id, string Name, string Slug)[] BrowseTopics =
     [
@@ -67,6 +86,28 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
 
     /// <inheritdoc />
     public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        try
+        {
+            ChannelItemResult result = await GetChannelItemsCore(query, cancellationToken).ConfigureAwait(false);
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                string kind = string.IsNullOrEmpty(query.FolderId) ? "root" : query.FolderId.Split(':', 2)[0];
+                LogBrowseLoaded(_logger, kind, result.Items.Count);
+            }
+            return result;
+        }
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Jellyfin catches folder exceptions and returns an empty list; log before it does.
+            string kind = (query.FolderId ?? "root").Split(':', 2)[0];
+            LogBrowseFailure(_logger, kind, ex);
+            throw;
+        }
+    }
+
+    private static async Task<ChannelItemResult> GetChannelItemsCore(InternalChannelItemQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
         string folderId = query.FolderId ?? string.Empty;
@@ -132,6 +173,10 @@ public sealed class SevenPlusChannel : IChannel, IRequiresMediaInfoCallback
             items = hasSeasonShelf
                 ? ParseSeasons(showSlug, document.RootElement)
                 : ParseListingPage(document.RootElement);
+            if (items.Count == 0)
+            {
+                throw new InvalidOperationException("7plus returned no supported seasons for show " + showSlug + ".");
+            }
         }
         else if (folderId.StartsWith("season:", StringComparison.Ordinal))
         {

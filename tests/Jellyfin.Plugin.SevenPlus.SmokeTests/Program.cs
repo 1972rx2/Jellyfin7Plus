@@ -5,6 +5,7 @@ using Jellyfin.Plugin.SevenPlus;
 using Jellyfin.Plugin.SevenPlus.Services;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
+using Microsoft.Extensions.Logging;
 
 int passed = 0;
 Run("plugin assembly types load against Jellyfin 12.4 references", () =>
@@ -189,6 +190,24 @@ if (File.Exists("work/season-False.json"))
     });
 }
 
+Run("browse exceptions are logged before Jellyfin can hide them", () =>
+{
+    var logger = new BrowseLogger();
+    var channel = new SevenPlusChannel(logger);
+    bool failed = false;
+    try
+    {
+        channel.GetChannelItems(new InternalChannelItemQuery { FolderId = "unsupported:private-id" }, default).GetAwaiter().GetResult();
+    }
+    catch (InvalidOperationException)
+    {
+        failed = true;
+    }
+
+    Assert(failed && logger.Failures == 1, "Expected the browse failure to be logged and rethrown.");
+    Assert(!logger.Message.Contains("private-id", StringComparison.Ordinal), "Only the folder kind should be included in the log message.");
+});
+
 Console.WriteLine($"{passed} 7plus catalogue and playback smoke checks passed.");
 return 0;
 
@@ -222,4 +241,20 @@ static List<ChannelItemInfo> InvokeEpisodeParser(JsonElement value)
     var task = (Task<List<ChannelItemInfo>>?)method.Invoke(null, [value, CancellationToken.None])
         ?? throw new InvalidOperationException("Episode parser returned no task.");
     return task.GetAwaiter().GetResult();
+}
+
+sealed class BrowseLogger : ILogger<SevenPlusChannel>
+{
+    public int Failures { get; private set; }
+    public string Message { get; private set; } = string.Empty;
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+    public bool IsEnabled(LogLevel logLevel) => true;
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        if (logLevel == LogLevel.Error)
+        {
+            Failures++;
+            Message = formatter(state, exception);
+        }
+    }
 }

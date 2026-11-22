@@ -5,6 +5,9 @@ namespace Jellyfin.Plugin.SevenPlus.Configuration;
 /// <summary>Stores the local 7plus account session and Australian market.</summary>
 public sealed class PluginConfiguration : BasePluginConfiguration
 {
+    /// <summary>Gets or sets the cache revision advanced by a successful catalogue check.</summary>
+    public string CatalogueCacheRevision { get; set; } = string.Empty;
+
     /// <summary>Gets or sets the access token issued after account pairing.</summary>
     public string AccessToken { get; set; } = string.Empty;
 
@@ -23,4 +26,3 @@ public sealed class PluginConfiguration : BasePluginConfiguration
     /// <summary>Gets or sets the catalogue search term shown in the channel.</summary>
     public string SearchTerm { get; set; } = string.Empty;
 }
-

@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/assets/sevenplus-logo-0.1.6.png",
     "versions": [
       {
+        "version": "0.1.7.0",
+        "changelog": "Add a dashboard Check and refresh catalogue action that tests live server navigation, shows errors, and refreshes only the 7plus cache after success. Log browse counts and exceptions before Jellyfin can hide them behind empty folders.",
+        "targetAbi": "12.4.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.7-jellyfin12.4-test.zip",
+        "checksum": "a98f7c78343b3d77e05c2f87b99a6e9b",
+        "timestamp": "2026-11-22T03:52:57Z"
+      },
+      {
         "version": "0.1.6.0",
         "changelog": "Display seasons without waiting for authenticated playback probes. Preserve known DRM labels and identify unknown protection in episode details. Embed the supplied dashboard logo directly and package a fresh plugin image with explicit assembly metadata.",
         "targetAbi": "12.4.0.0",
