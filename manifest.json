@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/assets/sevenplus-logo-0.1.6.png",
     "versions": [
       {
+        "version": "0.1.8.0",
+        "changelog": "Fix Linux root-relative catalogue links. No provider key is embedded; optional application credentials can be configured locally. Includes market 26 regression checks and cross-platform CI.",
+        "targetAbi": "12.4.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/1972rx2/Jellyfin7Plus/main/Jellyfin.Plugin.SevenPlus-0.1.8-jellyfin12.4-test.zip",
+        "checksum": "d7f6b193fe8a469de1d1580b94951e37",
+        "timestamp": "2026-11-22T04:06:35Z"
+      },
+      {
         "version": "0.1.7.0",
         "changelog": "Add a dashboard Check and refresh catalogue action that tests live server navigation, shows errors, and refreshes only the 7plus cache after success. Log browse counts and exceptions before Jellyfin can hide them behind empty folders.",
         "targetAbi": "12.4.0.0",

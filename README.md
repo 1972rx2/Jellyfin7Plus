@@ -24,7 +24,7 @@ Then open **Catalog**, install **7plus**, and restart Jellyfin. This test build 
 
 ## Manual install
 
-1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.7-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.7-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
+1. Extract `Jellyfin.Plugin.SevenPlus.dll` from [Jellyfin.Plugin.SevenPlus-0.1.8-jellyfin12.4-test.zip](Jellyfin.Plugin.SevenPlus-0.1.8-jellyfin12.4-test.zip) into a new `SevenPlus` directory under Jellyfin's plugins directory.
 2. Restart Jellyfin.
 3. Open **Dashboard → Plugins → 7plus**, pair an account, and browse the **7plus** channel.
 
@@ -60,3 +60,6 @@ Both Debug and Release builds pass with no warnings. Thirteen local smoke checks
 
 In Dashboard > Plugins > 7plus, choose **Check and refresh catalogue**. It tests public catalogue navigation from the Jellyfin server and reports the failed stage and exception, or refreshes the 7plus cache revision after success. Reopen the 7plus channel from its root after a successful check. This does not test account authentication or playback.
 
+
+
+Version 0.1.8 contains no embedded SWM application key. Public catalogue browsing does not require one. Saved account tokens are retained; if 7plus requires an application key for pairing, refresh or playback, configure it locally under Advanced connection settings and Save before retrying. Account and playback behavior without a configured key still needs verification on the server.

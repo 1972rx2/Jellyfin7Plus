@@ -5,6 +5,9 @@ namespace Jellyfin.Plugin.SevenPlus.Configuration;
 /// <summary>Stores the local 7plus account session and Australian market.</summary>
 public sealed class PluginConfiguration : BasePluginConfiguration
 {
+    /// <summary>Gets or sets an optional locally configured provider application key.</summary>
+    public string ProviderApiKey { get; set; } = string.Empty;
+
     /// <summary>Gets or sets the cache revision advanced by a successful catalogue check.</summary>
     public string CatalogueCacheRevision { get; set; } = string.Empty;
 

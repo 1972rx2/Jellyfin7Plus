@@ -20,7 +20,12 @@
       </div>
 
       <div class="inputContainer">
-        <label class="inputLabel inputLabelUnfocused" for="SearchTerm">Show search term</label>
+        <details><summary>Advanced connection settings</summary>
+        <label class="inputLabel" for="ProviderApiKey">7plus application key (optional)</label>
+        <input is="emby-input" id="ProviderApiKey" type="password" autocomplete="off" />
+        <div class="fieldDescription">Only needed if 7plus requires an application key for account or playback requests. Stored in this server's plugin configuration.</div>
+      </details>
+      <label class="inputLabel inputLabelUnfocused" for="SearchTerm">Show search term</label>
         <input is="emby-input" id="SearchTerm" type="text" autocomplete="off" />
         <div class="fieldDescription">The channel's Search Results folder uses this term. Browse by topic for broad catalogue searches.</div>
       </div>
@@ -57,10 +62,12 @@
       page.addEventListener('pagehide', () => clearInterval(loginTimer));
       page.addEventListener('pageshow', () => ApiClient.getPluginConfiguration(pluginId).then(config => {
         document.querySelector('#SearchTerm').value = config.SearchTerm || '';
+        document.querySelector('#ProviderApiKey').value = config.ProviderApiKey || '';
       }).then(() => checkLoginStatus()));
 
       document.querySelector('#saveButton').addEventListener('click', () => ApiClient.getPluginConfiguration(pluginId).then(config => {
         config.SearchTerm = document.querySelector('#SearchTerm').value.trim();
+        config.ProviderApiKey = document.querySelector('#ProviderApiKey').value.trim();
         return ApiClient.updatePluginConfiguration(pluginId, config);
       }).then(Dashboard.processPluginConfigurationUpdateResult));
 
@@ -160,6 +167,7 @@
   </div>
 </body>
 </html>
+
 
 
 

@@ -23,7 +23,6 @@ public static class SevenPlusApiClient
     private const string AuthorizationUrl = "https://auth2.swm.digital/account/device/authorize";
     private const string TokenUrl = "https://auth2.swm.digital/connect/token";
     private const string ActivationUrl = "https://7plus.com.au/connect";
-    private const string SwmApiKey = "kGcrNnuPClrkynfnKwG8IA/NhVG6ut5nPEdWF2jscvE=";
     private const string PlatformId = "androidtv";
     private const string PlatformVersion = "8.0";
     private const string ApiVersion = "4.11";
@@ -435,7 +434,11 @@ public static class SevenPlusApiClient
     {
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
-        request.Headers.TryAddWithoutValidation("x-swm-apikey", SwmApiKey);
+        string? applicationKey = (configuration ?? SevenPlusPlugin.Instance?.Configuration)?.ProviderApiKey;
+        if (!string.IsNullOrWhiteSpace(applicationKey))
+        {
+            request.Headers.TryAddWithoutValidation("x-swm-apikey", applicationKey);
+        }
         if (!string.IsNullOrWhiteSpace(configuration?.AccessToken))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", configuration.AccessToken);

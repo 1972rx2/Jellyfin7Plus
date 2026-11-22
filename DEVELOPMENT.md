@@ -27,3 +27,5 @@ Version 0.1.6: public captured Drama catalogue parses into shelves, 41 shows, tw
 Version 0.1.7 adds an elevated Check and refresh catalogue dashboard action, uncached navigation checks and a 7plus-only cache revision. Browse successes and exceptions are logged with folder kind and count; tokens are not included. Server-side cause of empty shelves remains unconfirmed until the diagnostic is run on the user's server.
 
 Version 0.1.8 fixes root-relative catalogue links being parsed as implicit file URIs on Unix. Resolve links against the 7plus HTTPS origin before validating scheme and host. Includes a reduced 41-card market 26 fixture and Windows/Linux CI. Server browsing and playback still need post-update confirmation.
+
+0.1.8 packaging: remove the embedded provider application key. An optional per-server ProviderApiKey configuration supplies that header only when configured. Catalogue checks run without an embedded key.
